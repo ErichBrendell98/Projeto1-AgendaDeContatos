@@ -1,16 +1,5 @@
 AGENDA = {}
 
-AGENDA['erich'] = {
-    'telefone':'999991234',
-    'email':'erich@solyd.com.br',
-    'endereco':'Av. 1',
-}
-
-AGENDA['maria'] = {
-    'telefone':'988885678',
-    'email':'maria@solyd.com.br',
-    'endereco':'Av. 2',
-}
 
 def mostrar_contatos():
     if AGENDA:
@@ -22,11 +11,12 @@ def mostrar_contatos():
 
 def buscar_contato(contato):
     try:
-        print(f'Nome: {contato}\n'
-            f'Telefone: {AGENDA[contato]["telefone"]}\n'
-            f'Email: {AGENDA[contato]["email"]}\n'
-            f'Endereco: {AGENDA[contato]["endereco"]}\n'
-            f'{"-"*80}')
+        print(f'{"-"*80}')
+        print('Nome:', contato)
+        print('Telefone:', AGENDA[contato]['telefone'])
+        print('Email:', AGENDA[contato]['email'])
+        print('Endereco:', AGENDA[contato]['endereco'])
+        print(f'{"-"*80}')
     except KeyError:
         print('\n>>>> Contato inexistente\n')
     except Exception as error:
@@ -47,12 +37,14 @@ def incluir_editar_contato(contato, telefone, email, endereco):
         'email':email,
         'endereco':endereco, 
         }
-    print(f'\n>>>> {contato} adicionado/editado com sucesso.\n')
+    salvar()
+    print(f'\n>>>> Contato {contato} adicionado/editado com sucesso.\n')
 
 
 def excluir_contato(contato):
     try:
         AGENDA.pop(contato)
+        salvar()
         print(f'\n>>>> Contato {contato} excluido com sucesso.\n')
     except KeyError:
         print('\n>>>> Contato inexistente\n')
@@ -64,7 +56,6 @@ def excluir_contato(contato):
 def exportar_contatos(nome_do_arquivo):
     try:
         with open(nome_do_arquivo, 'w') as arquivo:
-            arquivo.write('nome;telefone;email;endereco\n')
             for contato in AGENDA:
                 telefone = AGENDA[contato]['telefone']
                 email = AGENDA[contato]['email']
@@ -89,7 +80,36 @@ def importar_contatos(nome_do_arquivo):
                 endereco = detalhes[3]
 
                 incluir_editar_contato(nome, telefone, email, endereco)
+    except FileNotFoundError:
+        print('\n>>>> Arquivo não encontrado\n')
+    except Exception as error:
+        print('\n>>>> Algum erro inesperado aconteceu')
+        print(error)
 
+
+def salvar():
+    exportar_contatos('database.csv')
+
+
+def carregar():
+    try:
+        with open('database.csv', 'r') as arquivo:
+            linhas = arquivo.readlines()
+            for linha in linhas:
+                detalhes = linha.strip().split(';') 
+
+                nome = detalhes[0]
+                telefone = detalhes[1]
+                email = detalhes[2]
+                endereco = detalhes[3]
+
+                AGENDA[nome] = {
+                    'telefone':telefone,
+                    'email':email,
+                    'endereco':endereco, 
+                }
+        print('\n>>>> Database carregado com sucesso\n')
+        print(f'\n>>>> {len(AGENDA)} contatos carregados\n')
     except FileNotFoundError:
         print('\n>>>> Arquivo não encontrado\n')
     except Exception as error:
@@ -111,10 +131,13 @@ def imprimir_menu():
 
 
 # INICIO DO PROGRAMA
+carregar()
 while True:
     imprimir_menu()
 
-    opcao = input('Escolha uma opção: ')
+    opcao = input('\nEscolha uma opção: ')
+
+    print()
 
     if opcao == '1':
         mostrar_contatos()
